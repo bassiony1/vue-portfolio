@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from "vue"
+import { AnimatePresence } from "motion-v"
 import BubbleField from "./components/BubbleField.vue"
+import DetailWindow from "./components/DetailWindow.vue"
 import { profile } from "./data/portfolio"
 
 const openId = ref(null)
@@ -49,5 +51,15 @@ function toggleTheme() {
     >
       hover a bubble to catch it · click to dive in
     </p>
+
+    <AnimatePresence mode="wait">
+      <DetailWindow
+        v-if="openId"
+        :key="openId"
+        :node-id="openId"
+        @close="openId = null"
+        @open="openId = $event"
+      />
+    </AnimatePresence>
   </main>
 </template>

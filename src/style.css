@@ -98,6 +98,75 @@ body {
   opacity: 1;
 }
 
+/* ---------- detail window ---------- */
+
+.window {
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 0 40px color-mix(in oklab, var(--a) 6%, transparent),
+    0 24px 80px rgba(15, 40, 80, 0.25);
+  backdrop-filter: blur(18px);
+}
+
+.dark .window {
+  background: rgba(10, 22, 48, 0.72);
+  border-color: color-mix(in oklab, var(--a) 30%, rgba(255, 255, 255, 0.15));
+  box-shadow:
+    inset 0 0 40px color-mix(in oklab, var(--a) 10%, transparent),
+    0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card {
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid color-mix(in oklab, var(--a) 20%, rgba(255, 255, 255, 0.7));
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px color-mix(in oklab, var(--a) 22%, transparent);
+}
+
+.dark .glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: color-mix(in oklab, var(--a) 30%, rgba(255, 255, 255, 0.1));
+}
+
+.section-h {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-slate-800);
+}
+
+.dark .section-h {
+  color: #fff;
+}
+
+.tag {
+  border-radius: 9999px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--a) 70%, var(--color-slate-700));
+  background: color-mix(in oklab, var(--a) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--a) 30%, transparent);
+}
+
+.dark .tag {
+  color: color-mix(in oklab, var(--a) 70%, white);
+}
+
+.tag-sm {
+  padding: 0.15rem 0.55rem;
+  font-size: 0.68rem;
+}
+
 /* ---------- tethers ---------- */
 
 .tether {
