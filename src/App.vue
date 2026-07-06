@@ -44,7 +44,7 @@ function toggleTheme() {
     <BubbleField @open="openNode" />
 
     <header
-      class="pointer-events-none absolute inset-x-0 top-0 z-40 flex items-start justify-between p-5 md:p-7"
+      class="pointer-events-none absolute inset-x-0 top-0 z-40 flex items-start flex-wrap gap-4 justify-between p-5 md:p-7"
     >
       <div>
         <h1 class="text-2xl font-black tracking-tight text-slate-800 md:text-3xl dark:text-white">
