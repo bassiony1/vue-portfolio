@@ -79,6 +79,7 @@ body {
 
 .bubble {
   border-radius: 9999px;
+  touch-action: none; /* let pointermove drive drag on touch screens */
   background:
     radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.12) 45%, transparent 62%),
     radial-gradient(circle at 72% 78%, color-mix(in oklab, var(--a) 38%, transparent), transparent 62%),

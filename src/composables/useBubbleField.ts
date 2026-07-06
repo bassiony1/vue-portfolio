@@ -26,6 +26,7 @@ export interface BubbleNode {
   vy: number
   phase: number
   hovered: boolean
+  dragging: boolean
   hasChildren?: boolean
   count?: number
 }
@@ -84,6 +85,7 @@ export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
         vy: Math.sin(a) * cruise,
         phase: Math.random() * Math.PI * 2,
         hovered: false,
+        dragging: false,
         hasChildren: !!cat.children,
       })
     }
@@ -109,6 +111,7 @@ export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
     const time = t / 1000
 
     for (const n of nodes) {
+      if (n.dragging) continue // pointer owns the position
       if (n.hovered) {
         // caught: glide to a stop
         n.vx *= 0.8
@@ -144,6 +147,11 @@ export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
           const a = Math.random() * Math.PI * 2
           n.vx = Math.cos(a) * Math.max(cruise, 1)
           n.vy = Math.sin(a) * Math.max(cruise, 1)
+        } else if (sp > cruise * 1.5) {
+          // thrown: bleed speed off gently so it glides and bounces a while
+          const drag = Math.max(0, 1 - 0.9 * dt)
+          n.vx *= drag
+          n.vy *= drag
         } else {
           const k = 1 + ((cruise - sp) / sp) * Math.min(1, dt * 1.2)
           n.vx *= k
@@ -167,13 +175,15 @@ export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
           const push = (min - d) / 2
           const ux = dx / d
           const uy = dy / d
-          if (!a.hovered) {
+          const aPinned = a.hovered || a.dragging
+          const bPinned = b.hovered || b.dragging
+          if (!aPinned) {
             a.x -= ux * push
             a.y -= uy * push
             a.vx -= ux * 30 * dt
             a.vy -= uy * 30 * dt
           }
-          if (!b.hovered) {
+          if (!bPinned) {
             b.x += ux * push
             b.y += uy * push
             b.vx += ux * 30 * dt
@@ -237,6 +247,7 @@ export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
         vy: Math.sin(a) * 110,
         phase: Math.random() * Math.PI * 2,
         hovered: false,
+        dragging: false,
         count: ch.count,
       })
     })
@@ -244,6 +255,62 @@ export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
 
   function setHover(node: BubbleNode, val: boolean) {
     node.hovered = val
+  }
+
+  // ---- drag & throw ----
+  const MAX_THROW = 1400 // px/s
+  let dragNode: BubbleNode | null = null
+  let dragMoved = 0
+  let sample = { x: 0, y: 0, t: 0 }
+  let throwVel = { x: 0, y: 0 }
+
+  function startDrag(node: BubbleNode, e: PointerEvent) {
+    dragNode = node
+    node.dragging = true
+    dragMoved = 0
+    sample = { x: e.clientX, y: e.clientY, t: performance.now() }
+    throwVel = { x: 0, y: 0 }
+    window.addEventListener("pointermove", onDragMove)
+    window.addEventListener("pointerup", endDrag, { once: true })
+  }
+
+  function onDragMove(e: PointerEvent) {
+    const el = containerRef.value
+    if (!dragNode || !el) return
+    const rect = el.getBoundingClientRect()
+    const nx = Math.min(Math.max(e.clientX - rect.left, dragNode.r), W - dragNode.r)
+    const ny = Math.min(Math.max(e.clientY - rect.top, dragNode.r), H - dragNode.r)
+    dragMoved += Math.hypot(nx - dragNode.x, ny - dragNode.y)
+    dragNode.x = nx
+    dragNode.y = ny
+    const now = performance.now()
+    const dt = (now - sample.t) / 1000
+    if (dt > 0.016) {
+      throwVel = { x: (e.clientX - sample.x) / dt, y: (e.clientY - sample.y) / dt }
+      sample = { x: e.clientX, y: e.clientY, t: now }
+    }
+  }
+
+  function endDrag() {
+    window.removeEventListener("pointermove", onDragMove)
+    if (!dragNode) return
+    // pointer sat still before release -> no throw
+    if (performance.now() - sample.t > 120) throwVel = { x: 0, y: 0 }
+    const sp = Math.hypot(throwVel.x, throwVel.y)
+    const k = sp > MAX_THROW ? MAX_THROW / sp : 1
+    dragNode.vx = throwVel.x * k
+    dragNode.vy = throwVel.y * k
+    dragNode.dragging = false
+    // un-hover so the glide-to-stop damping doesn't eat the throw
+    dragNode.hovered = false
+    dragNode = null
+  }
+
+  // a real drag ends with a click event; callers use this to swallow it
+  function consumeDragClick(): boolean {
+    const moved = dragMoved > 6
+    dragMoved = 0
+    return moved
   }
 
   // tether lines: every child ties to its parent; the hovered bubble also
@@ -278,8 +345,10 @@ export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
     onBeforeUnmount(() => {
       ro.disconnect()
       cancelAnimationFrame(raf)
+      window.removeEventListener("pointermove", onDragMove)
+      window.removeEventListener("pointerup", endDrag)
     })
   })
 
-  return { nodes, burstIds, toggleBurst, setHover, tethers }
+  return { nodes, burstIds, toggleBurst, setHover, tethers, startDrag, consumeDragClick }
 }

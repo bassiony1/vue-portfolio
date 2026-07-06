@@ -7,6 +7,7 @@ const emit = defineEmits<{
   hover: [node: BubbleNode]
   unhover: [node: BubbleNode]
   activate: [node: BubbleNode]
+  dragstart: [node: BubbleNode, e: PointerEvent]
 }>()
 </script>
 
@@ -18,7 +19,8 @@ const emit = defineEmits<{
     }"
   >
     <motion.div
-      class="bubble grid cursor-pointer place-items-center text-center select-none"
+      class="bubble grid place-items-center text-center select-none"
+      :class="node.dragging ? 'cursor-grabbing' : 'cursor-grab'"
       :style="{
         '--a': ACCENT_HEX[node.accent],
         width: node.r * 2 + 'px',
@@ -30,6 +32,7 @@ const emit = defineEmits<{
       :transition="{ type: 'spring', stiffness: 190, damping: 19 }"
       @pointerenter="emit('hover', node)"
       @pointerleave="emit('unhover', node)"
+      @pointerdown.prevent="emit('dragstart', node, $event)"
       @click="emit('activate', node)"
     >
       <div class="pointer-events-none px-2">

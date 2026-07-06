@@ -11,9 +11,11 @@ import {
 
 const emit = defineEmits<{ open: [id: string] }>()
 const box = ref<HTMLElement | null>(null)
-const { nodes, toggleBurst, setHover, tethers } = useBubbleField(box)
+const { nodes, toggleBurst, setHover, tethers, startDrag, consumeDragClick } =
+  useBubbleField(box)
 
 function activate(node: BubbleNode) {
+  if (consumeDragClick()) return // that click was the end of a throw
   if (node.kind === "category" && node.hasChildren) toggleBurst(node.id)
   else emit("open", node.id)
 }
@@ -46,6 +48,7 @@ function tetherPath(l: Tether): string {
         :node="n"
         @hover="setHover(n, true)"
         @unhover="setHover(n, false)"
+        @dragstart="startDrag"
         @activate="activate"
       />
     </AnimatePresence>
