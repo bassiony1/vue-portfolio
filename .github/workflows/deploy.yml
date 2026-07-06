@@ -26,7 +26,8 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      # ponytail: npm install, not ci — npm bug omits bundled optional wasm deps from Windows-generated lockfiles
+      - run: npm install
       - run: npm run build
       - uses: actions/configure-pages@v5
         with:
