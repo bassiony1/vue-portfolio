@@ -1,5 +1,21 @@
-# Vue 3 + Vite
+# Mahmoud Bassiony — Bubble Portfolio
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+An interactive portfolio: sections float as glass bubbles in a deep-ocean
+scene. Hover a bubble to catch it, click to burst it into sub-bubbles or dive
+into a detail window. Recruiters in a hurry can hit **▶ Recruiter tour** to
+page through every section in order.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+Built with **Vue 3**, **Tailwind CSS v4**, and **Motion for Vue** (motion-v).
+Light and dark themes included.
+
+## Run it
+
+```sh
+npm install
+npm run dev
+```
+
+## Edit content
+
+All portfolio data (projects, skills, education, history, contact) lives in
+`src/data/portfolio.js` — one file, no code changes needed elsewhere.

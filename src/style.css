@@ -33,7 +33,7 @@ body {
   padding: 0.35rem 0.9rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-slate-700);
+  color: #334155;
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(6px);
@@ -88,7 +88,8 @@ body {
     inset 0 0 22px color-mix(in oklab, var(--a) 22%, transparent),
     0 10px 40px color-mix(in oklab, var(--a) 20%, transparent);
   backdrop-filter: blur(5px);
-  transition: box-shadow 0.4s ease, transform 0.4s ease;
+  /* no transform transition here — motion-v owns this element's transform */
+  transition: box-shadow 0.4s ease;
 }
 
 .bubble:hover {
@@ -160,7 +161,7 @@ body {
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: var(--color-slate-800);
+  color: #1e293b;
 }
 
 .dark .section-h {
@@ -172,7 +173,7 @@ body {
   padding: 0.3rem 0.8rem;
   font-size: 0.78rem;
   font-weight: 600;
-  color: color-mix(in oklab, var(--a) 70%, var(--color-slate-700));
+  color: color-mix(in oklab, var(--a) 70%, #334155);
   background: color-mix(in oklab, var(--a) 12%, transparent);
   border: 1px solid color-mix(in oklab, var(--a) 30%, transparent);
 }

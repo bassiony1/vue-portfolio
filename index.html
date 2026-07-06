@@ -11,6 +11,9 @@
     <title>Mahmoud Bassiony · Software Engineer</title>
     <script>
       // apply saved theme before first paint to avoid flash
+      // (?theme=light|dark overrides, handy for sharing/screenshots)
+      const q = new URLSearchParams(location.search).get("theme");
+      if (q === "light" || q === "dark") localStorage.theme = q;
       if (
         localStorage.theme === "dark" ||
         (!("theme" in localStorage) &&

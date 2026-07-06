@@ -88,8 +88,10 @@ export function useBubbleField(containerRef) {
         n.vy *= 0.8
         continue
       }
-      n.vx += Math.cos(time * 0.55 + n.phase) * WOBBLE * dt
-      n.vy += Math.sin(time * 0.62 + n.phase * 1.7) * WOBBLE * dt
+      if (!reduced) {
+        n.vx += Math.cos(time * 0.55 + n.phase) * WOBBLE * dt
+        n.vy += Math.sin(time * 0.62 + n.phase * 1.7) * WOBBLE * dt
+      }
 
       if (n.parentId) {
         // child orbits its parent on a soft spring
@@ -109,7 +111,9 @@ export function useBubbleField(containerRef) {
       } else {
         // free bubble: ease speed back toward cruise
         const sp = Math.hypot(n.vx, n.vy)
-        if (sp < 0.001) {
+        if (reduced) {
+          // prefers-reduced-motion: stay put
+        } else if (sp < 0.001) {
           const a = Math.random() * Math.PI * 2
           n.vx = Math.cos(a) * Math.max(cruise, 1)
           n.vy = Math.sin(a) * Math.max(cruise, 1)
