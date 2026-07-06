@@ -12,8 +12,11 @@ import {
 
 const props = defineProps({
   nodeId: { type: String, required: true },
+  tourIdx: { type: Number, default: -1 },
+  tourLen: { type: Number, default: 0 },
 })
-const emit = defineEmits(["close", "open"])
+const emit = defineEmits(["close", "open", "next", "prev"])
+const touring = computed(() => props.tourIdx >= 0)
 
 const node = computed(() => nodeById[props.nodeId])
 const category = computed(() => nodeById[props.nodeId.split(".")[0]])
@@ -57,6 +60,8 @@ function relLabel(id) {
 
 function onKey(e) {
   if (e.key === "Escape") emit("close")
+  if (touring.value && e.key === "ArrowRight") emit("next")
+  if (touring.value && e.key === "ArrowLeft") emit("prev")
 }
 onMounted(() => window.addEventListener("keydown", onKey))
 onBeforeUnmount(() => window.removeEventListener("keydown", onKey))
@@ -208,6 +213,28 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey))
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- tour controls -->
+      <div
+        v-if="touring"
+        class="flex items-center justify-between border-t border-slate-200/60 px-6 py-3 md:px-8 dark:border-white/10"
+      >
+        <button class="chip-btn" :disabled="tourIdx === 0" :class="{ 'opacity-40': tourIdx === 0 }" @click="emit('prev')">
+          ← Prev
+        </button>
+        <div class="flex gap-1.5">
+          <span
+            v-for="i in tourLen"
+            :key="i"
+            class="h-1.5 w-1.5 rounded-full transition-colors"
+            :style="{ background: i - 1 === tourIdx ? accent : 'currentColor' }"
+            :class="i - 1 === tourIdx ? '' : 'opacity-25'"
+          ></span>
+        </div>
+        <button class="chip-btn chip-btn-accent" @click="emit('next')">
+          {{ tourIdx === tourLen - 1 ? "Finish ✓" : "Next →" }}
+        </button>
       </div>
     </motion.div>
   </motion.div>

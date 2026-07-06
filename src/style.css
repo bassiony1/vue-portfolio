@@ -56,6 +56,25 @@ body {
   background: rgba(255, 255, 255, 0.16);
 }
 
+.chip-btn-accent {
+  color: #fff;
+  background: linear-gradient(135deg, #0891b2, #2563eb);
+  border-color: transparent;
+}
+
+.chip-btn-accent:hover {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+}
+
+.dark .chip-btn-accent {
+  color: #fff;
+  background: linear-gradient(135deg, #0891b2, #2563eb);
+}
+
+.dark .chip-btn-accent:hover {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+}
+
 /* ---------- glass bubbles ---------- */
 
 .bubble {

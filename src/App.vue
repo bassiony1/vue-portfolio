@@ -3,9 +3,33 @@ import { ref } from "vue"
 import { AnimatePresence } from "motion-v"
 import BubbleField from "./components/BubbleField.vue"
 import DetailWindow from "./components/DetailWindow.vue"
-import { profile } from "./data/portfolio"
+import { profile, tourOrder } from "./data/portfolio"
 
 const openId = ref(null)
+const tourIdx = ref(-1)
+
+function startTour() {
+  tourIdx.value = 0
+  openId.value = tourOrder[0]
+}
+function tourNext() {
+  if (tourIdx.value >= tourOrder.length - 1) return closeWindow()
+  tourIdx.value++
+  openId.value = tourOrder[tourIdx.value]
+}
+function tourPrev() {
+  if (tourIdx.value <= 0) return
+  tourIdx.value--
+  openId.value = tourOrder[tourIdx.value]
+}
+function closeWindow() {
+  tourIdx.value = -1
+  openId.value = null
+}
+function openNode(id) {
+  tourIdx.value = -1
+  openId.value = id
+}
 
 const dark = ref(document.documentElement.classList.contains("dark"))
 function toggleTheme() {
@@ -17,7 +41,7 @@ function toggleTheme() {
 
 <template>
   <main class="relative h-full w-full">
-    <BubbleField @open="openId = $event" />
+    <BubbleField @open="openNode" />
 
     <header
       class="pointer-events-none absolute inset-x-0 top-0 z-40 flex items-start justify-between p-5 md:p-7"
@@ -32,6 +56,7 @@ function toggleTheme() {
       </div>
 
       <div class="pointer-events-auto flex items-center gap-2">
+        <button class="chip-btn chip-btn-accent" @click="startTour">▶ Recruiter tour</button>
         <a :href="profile.links.github" target="_blank" rel="noopener" class="chip-btn">GitHub</a>
         <a :href="profile.links.linkedin" target="_blank" rel="noopener" class="chip-btn">
           LinkedIn
@@ -57,8 +82,12 @@ function toggleTheme() {
         v-if="openId"
         :key="openId"
         :node-id="openId"
-        @close="openId = null"
-        @open="openId = $event"
+        :tour-idx="tourIdx"
+        :tour-len="tourOrder.length"
+        @close="closeWindow"
+        @open="openNode"
+        @next="tourNext"
+        @prev="tourPrev"
       />
     </AnimatePresence>
   </main>
