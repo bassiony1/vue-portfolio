@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Fira Code", ui-monospace, monospace;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  /* light: airy sky */
+  background: linear-gradient(180deg, #e8f4fd 0%, #d3e9f8 55%, #bcdcf2 100%);
+  transition: background 0.6s ease;
+}
+
+.dark body {
+  /* dark: deep ocean */
+  background: linear-gradient(180deg, #050d1f 0%, #0a1a38 55%, #101f4a 100%);
+}
