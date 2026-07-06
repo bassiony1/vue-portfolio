@@ -1,11 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue"
 import { AnimatePresence } from "motion-v"
 import BubbleField from "./components/BubbleField.vue"
 import DetailWindow from "./components/DetailWindow.vue"
 import { profile, tourOrder } from "./data/portfolio"
 
-const openId = ref(null)
+const openId = ref<string | null>(null)
 const tourIdx = ref(-1)
 
 function startTour() {
@@ -26,7 +26,7 @@ function closeWindow() {
   tourIdx.value = -1
   openId.value = null
 }
-function openNode(id) {
+function openNode(id: string) {
   tourIdx.value = -1
   openId.value = id
 }

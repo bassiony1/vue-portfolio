@@ -1,6 +1,46 @@
 // Single source of truth for all portfolio content.
 // Bubble scene, detail windows, and the guided tour all read from here.
 
+export type Accent = "cyan" | "rose" | "emerald" | "blue" | "indigo" | "amber"
+
+export interface Project {
+  title: string
+  desc: string
+  tech: string[]
+  link: string
+}
+
+// education entries use field/place/grade, history entries use points
+export interface Entry {
+  period: string
+  title: string
+  field?: string
+  place?: string
+  grade?: string
+  points?: string[]
+}
+
+export interface ChildNode {
+  id: string
+  label: string
+  related: string[]
+  count?: number
+  items?: Project[]
+  tags?: string[]
+  entry?: Entry
+}
+
+export interface Category {
+  id: string
+  label: string
+  icon: string
+  accent: Accent
+  size: number
+  blurb: string
+  children?: ChildNode[]
+  related?: string[]
+}
+
 export const profile = {
   name: "Mahmoud Bassiony",
   title: "Software Engineer",
@@ -15,7 +55,7 @@ export const profile = {
   },
 }
 
-const projects = {
+const projects: Record<"backend" | "fullstack" | "frontend" | "automation", Project[]> = {
   backend: [
     {
       title: "ANEES (Autism Therapy)",
@@ -166,7 +206,7 @@ const projects = {
 
 // Bubble graph: 6 category bubbles; some burst into child bubbles.
 // `related` ids power the tether lines between bubbles on the canvas.
-export const categories = [
+export const categories: Category[] = [
   {
     id: "summary",
     label: "Summary",
@@ -404,8 +444,11 @@ export const summaryText = [
 ]
 
 // flat lookup: id -> node (categories and children)
-export const nodeById = Object.fromEntries(
-  categories.flatMap((c) => [[c.id, c], ...(c.children ?? []).map((ch) => [ch.id, ch])]),
+export const nodeById: Record<string, Category | ChildNode> = Object.fromEntries(
+  categories.flatMap((c): [string, Category | ChildNode][] => [
+    [c.id, c],
+    ...(c.children ?? []).map((ch): [string, Category | ChildNode] => [ch.id, ch]),
+  ]),
 )
 
 // order used by the guided tour

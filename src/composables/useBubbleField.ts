@@ -1,7 +1,7 @@
-import { reactive, computed, onMounted, onBeforeUnmount } from "vue"
-import { categories, nodeById } from "../data/portfolio"
+import { reactive, computed, onMounted, onBeforeUnmount, type Ref } from "vue"
+import { categories, nodeById, type Accent } from "../data/portfolio"
 
-export const ACCENT_HEX = {
+export const ACCENT_HEX: Record<Accent, string> = {
   cyan: "#22d3ee",
   rose: "#fb7185",
   emerald: "#34d399",
@@ -10,15 +10,42 @@ export const ACCENT_HEX = {
   amber: "#fbbf24",
 }
 
+export interface BubbleNode {
+  id: string
+  label: string
+  blurb?: string
+  kind: "category" | "child"
+  parentId: string | null
+  accent: Accent
+  size: number
+  baseR: number
+  r: number
+  x: number
+  y: number
+  vx: number
+  vy: number
+  phase: number
+  hovered: boolean
+  hasChildren?: boolean
+  count?: number
+}
+
+export interface Tether {
+  id: string
+  from: BubbleNode
+  to: BubbleNode
+  related: boolean
+}
+
 const CRUISE = 22 // px/s drift speed
 const WOBBLE = 26 // px/s² sinusoidal push, gives the watery wandering
 const GAP = 14 // min space between bubble edges
 
 // ponytail: hand-rolled rAF physics — ~20 bubbles max, O(n²) collisions are fine.
 // Swap for matter.js only if the scene ever grows into hundreds of bodies.
-export function useBubbleField(containerRef) {
-  const nodes = reactive([])
-  const burstIds = reactive(new Set())
+export function useBubbleField(containerRef: Ref<HTMLElement | null>) {
+  const nodes = reactive<BubbleNode[]>([])
+  const burstIds = reactive(new Set<string>())
   let W = 0
   let H = 0
   let raf = 0
@@ -26,7 +53,7 @@ export function useBubbleField(containerRef) {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
   const cruise = reduced ? 0 : CRUISE
 
-  const byId = (id) => nodes.find((n) => n.id === id)
+  const byId = (id: string) => nodes.find((n) => n.id === id)
   const baseRadius = () => Math.min(Math.max(Math.min(W, H) * 0.085, 42), 82)
 
   function init() {
@@ -76,7 +103,7 @@ export function useBubbleField(containerRef) {
     }
   }
 
-  function step(t) {
+  function step(t: number) {
     const dt = Math.min((t - last) / 1000, 0.05)
     last = t
     const time = t / 1000
@@ -130,8 +157,8 @@ export function useBubbleField(containerRef) {
     // soft push-apart
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
-        const a = nodes[i]
-        const b = nodes[j]
+        const a = nodes[i]!
+        const b = nodes[j]!
         const dx = b.x - a.x
         const dy = b.y - a.y
         const d = Math.hypot(dx, dy) || 1
@@ -177,15 +204,15 @@ export function useBubbleField(containerRef) {
     raf = requestAnimationFrame(step)
   }
 
-  function toggleBurst(catId) {
+  function toggleBurst(catId: string) {
     const parent = byId(catId)
     const cat = nodeById[catId]
-    if (!parent || !cat?.children) return
+    if (!parent || !cat || !("children" in cat) || !cat.children) return
     if (burstIds.has(catId)) {
       burstIds.delete(catId)
       parent.r = parent.baseR
       for (let i = nodes.length - 1; i >= 0; i--) {
-        if (nodes[i].parentId === catId) nodes.splice(i, 1)
+        if (nodes[i]!.parentId === catId) nodes.splice(i, 1)
       }
       return
     }
@@ -193,14 +220,15 @@ export function useBubbleField(containerRef) {
     parent.r = parent.baseR * 0.55
     const childR = baseRadius() * 0.62
     cat.children.forEach((ch, i) => {
-      const a = (i / cat.children.length) * Math.PI * 2 + Math.random() * 0.6
+      const a = (i / cat.children!.length) * Math.PI * 2 + Math.random() * 0.6
       nodes.push({
         id: ch.id,
         label: ch.label,
         blurb: "click for details",
         kind: "child",
         parentId: catId,
-        accent: cat.accent,
+        accent: parent.accent,
+        size: 1,
         baseR: childR,
         r: childR,
         x: parent.x + Math.cos(a) * 8,
@@ -214,14 +242,14 @@ export function useBubbleField(containerRef) {
     })
   }
 
-  function setHover(node, val) {
+  function setHover(node: BubbleNode, val: boolean) {
     node.hovered = val
   }
 
   // tether lines: every child ties to its parent; the hovered bubble also
   // reaches out to its related nodes (or their category bubble if not burst)
-  const tethers = computed(() => {
-    const lines = []
+  const tethers = computed<Tether[]>(() => {
+    const lines: Tether[] = []
     for (const n of nodes) {
       if (!n.parentId) continue
       const p = byId(n.parentId)
@@ -230,7 +258,7 @@ export function useBubbleField(containerRef) {
     const hv = nodes.find((n) => n.hovered)
     if (hv) {
       for (const rid of nodeById[hv.id]?.related ?? []) {
-        const target = byId(rid) ?? byId(rid.split(".")[0])
+        const target = byId(rid) ?? byId(rid.split(".")[0]!)
         if (target) lines.push({ id: `${hv.id}~${rid}`, from: hv, to: target, related: true })
       }
     }
@@ -239,6 +267,7 @@ export function useBubbleField(containerRef) {
 
   onMounted(() => {
     const el = containerRef.value
+    if (!el) return
     W = el.clientWidth
     H = el.clientHeight
     init()

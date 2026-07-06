@@ -1,9 +1,13 @@
-<script setup>
+<script setup lang="ts">
 import { motion } from "motion-v"
-import { ACCENT_HEX } from "../composables/useBubbleField"
+import { ACCENT_HEX, type BubbleNode } from "../composables/useBubbleField"
 
-const props = defineProps({ node: { type: Object, required: true } })
-const emit = defineEmits(["hover", "unhover", "activate"])
+defineProps<{ node: BubbleNode }>()
+const emit = defineEmits<{
+  hover: [node: BubbleNode]
+  unhover: [node: BubbleNode]
+  activate: [node: BubbleNode]
+}>()
 </script>
 
 <template>

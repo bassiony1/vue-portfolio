@@ -1,20 +1,25 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue"
 import { AnimatePresence } from "motion-v"
 import Bubble from "./Bubble.vue"
-import { useBubbleField, ACCENT_HEX } from "../composables/useBubbleField"
+import {
+  useBubbleField,
+  ACCENT_HEX,
+  type BubbleNode,
+  type Tether,
+} from "../composables/useBubbleField"
 
-const emit = defineEmits(["open"])
-const box = ref(null)
+const emit = defineEmits<{ open: [id: string] }>()
+const box = ref<HTMLElement | null>(null)
 const { nodes, toggleBurst, setHover, tethers } = useBubbleField(box)
 
-function activate(node) {
+function activate(node: BubbleNode) {
   if (node.kind === "category" && node.hasChildren) toggleBurst(node.id)
   else emit("open", node.id)
 }
 
 // gentle sag in the middle so lines hang like they're underwater
-function tetherPath(l) {
+function tetherPath(l: Tether): string {
   const sag = Math.hypot(l.to.x - l.from.x, l.to.y - l.from.y) * 0.12
   const mx = (l.from.x + l.to.x) / 2
   const my = (l.from.y + l.to.y) / 2 + sag

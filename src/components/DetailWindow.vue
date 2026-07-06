@@ -1,64 +1,75 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount } from "vue"
 import { motion } from "motion-v"
 import { ACCENT_HEX } from "../composables/useBubbleField"
 import {
-  categories,
   nodeById,
   profile,
   attributes,
   summaryText,
+  type ChildNode,
 } from "../data/portfolio"
 
-const props = defineProps({
-  nodeId: { type: String, required: true },
-  tourIdx: { type: Number, default: -1 },
-  tourLen: { type: Number, default: 0 },
-})
-const emit = defineEmits(["close", "open", "next", "prev"])
+const props = withDefaults(
+  defineProps<{ nodeId: string; tourIdx?: number; tourLen?: number }>(),
+  { tourIdx: -1, tourLen: 0 },
+)
+const emit = defineEmits<{ close: []; open: [id: string]; next: []; prev: [] }>()
 const touring = computed(() => props.tourIdx >= 0)
 
 const node = computed(() => nodeById[props.nodeId])
-const category = computed(() => nodeById[props.nodeId.split(".")[0]])
+const category = computed(() => nodeById[props.nodeId.split(".")[0]!])
 const isChild = computed(() => props.nodeId.includes("."))
-const accent = computed(() => ACCENT_HEX[category.value?.accent] ?? "#22d3ee")
+const accent = computed(() => {
+  const c = category.value
+  return c && "accent" in c ? ACCENT_HEX[c.accent] : "#22d3ee"
+})
+
+const WINDOW_TITLES: Record<string, string> = {
+  summary: "Professional Summary",
+  skills: "Technical Arsenal",
+  projects: "Technical Projects",
+  education: "Education",
+  history: "History & Training",
+  contact: "Get in Touch",
+}
 
 const title = computed(() =>
-  isChild.value ? `${category.value.label} · ${node.value.label}` : windowTitle(props.nodeId),
+  isChild.value
+    ? `${category.value?.label} · ${node.value?.label}`
+    : (WINDOW_TITLES[props.nodeId] ?? ""),
 )
-
-function windowTitle(id) {
-  return {
-    summary: "Professional Summary",
-    skills: "Technical Arsenal",
-    projects: "Technical Projects",
-    education: "Education",
-    history: "History & Training",
-    contact: "Get in Touch",
-  }[id]
-}
 
 // each section renders when its list is non-empty; a child window
 // just narrows the list down to itself
-function groupsOf(catId) {
-  if (props.nodeId === catId) return nodeById[catId].children
-  if (isChild.value && category.value.id === catId) return [node.value]
+function groupsOf(catId: string): ChildNode[] {
+  const cat = nodeById[catId]
+  if (props.nodeId === catId && cat && "children" in cat) return cat.children ?? []
+  if (isChild.value && category.value?.id === catId) return [node.value as ChildNode]
   return []
 }
-const skillGroups = computed(() => groupsOf("skills"))
-const projectGroups = computed(() => groupsOf("projects"))
-const eduEntries = computed(() => groupsOf("education"))
-const historyEntries = computed(() => groupsOf("history"))
+const skillGroups = computed(() =>
+  groupsOf("skills").map((g) => ({ id: g.id, label: g.label, tags: g.tags ?? [] })),
+)
+const projectGroups = computed(() =>
+  groupsOf("projects").map((g) => ({ id: g.id, label: g.label, items: g.items ?? [] })),
+)
+const eduEntries = computed(() =>
+  groupsOf("education").map((g) => ({ id: g.id, ...g.entry! })),
+)
+const historyEntries = computed(() =>
+  groupsOf("history").map((g) => ({ id: g.id, ...g.entry!, points: g.entry?.points ?? [] })),
+)
 
 const related = computed(() =>
   (node.value?.related ?? []).map((id) => ({ id, label: relLabel(id) })),
 )
-function relLabel(id) {
-  const [catId] = id.split(".")
-  return `${nodeById[catId].label} · ${nodeById[id].label}`
+function relLabel(id: string): string {
+  const catId = id.split(".")[0]!
+  return `${nodeById[catId]?.label} · ${nodeById[id]?.label}`
 }
 
-function onKey(e) {
+function onKey(e: KeyboardEvent) {
   if (e.key === "Escape") emit("close")
   if (touring.value && e.key === "ArrowRight") emit("next")
   if (touring.value && e.key === "ArrowLeft") emit("prev")
@@ -141,33 +152,37 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey))
         </section>
 
         <!-- education -->
-        <section v-if="eduEntries.length" class="space-y-8 border-l-2 pl-6" :style="{ borderColor: accent + '55' }">
+        <section
+          v-if="eduEntries.length"
+          class="space-y-8 border-l-2 pl-6"
+          :style="{ borderColor: accent + '55' }"
+        >
           <div v-for="e in eduEntries" :key="e.id" class="relative">
             <span
               class="absolute top-1.5 -left-[31px] h-3 w-3 rounded-full"
               :style="{ background: accent }"
             ></span>
             <span class="text-xs font-bold tracking-wide uppercase" :style="{ color: accent }">
-              {{ e.entry.period }}
+              {{ e.period }}
             </span>
-            <h4 class="text-lg font-bold text-slate-800 dark:text-white">{{ e.entry.title }}</h4>
+            <h4 class="text-lg font-bold text-slate-800 dark:text-white">{{ e.title }}</h4>
             <p class="text-sm text-slate-500 dark:text-slate-400">
-              {{ e.entry.field }} — {{ e.entry.place }}
+              {{ e.field }} — {{ e.place }}
             </p>
-            <span class="tag tag-sm mt-2 inline-block">{{ e.entry.grade }}</span>
+            <span class="tag tag-sm mt-2 inline-block">{{ e.grade }}</span>
           </div>
         </section>
 
         <!-- history -->
         <section v-for="h in historyEntries" :key="h.id">
           <div class="mb-1 flex items-baseline justify-between gap-3">
-            <h3 class="section-h mb-0">{{ h.entry.title }}</h3>
+            <h3 class="section-h mb-0">{{ h.title }}</h3>
             <span class="shrink-0 font-mono text-xs" :style="{ color: accent }">
-              {{ h.entry.period }}
+              {{ h.period }}
             </span>
           </div>
           <ul class="list-disc space-y-1 pl-5 text-sm text-slate-500 dark:text-slate-400">
-            <li v-for="pt in h.entry.points" :key="pt">{{ pt }}</li>
+            <li v-for="pt in h.points" :key="pt">{{ pt }}</li>
           </ul>
         </section>
 
@@ -199,16 +214,13 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey))
 
         <!-- cross-links -->
         <div v-if="related.length" class="border-t border-slate-200/60 pt-4 dark:border-white/10">
-          <p class="mb-2 text-xs font-bold tracking-wide text-slate-400 uppercase dark:text-slate-500">
+          <p
+            class="mb-2 text-xs font-bold tracking-wide text-slate-400 uppercase dark:text-slate-500"
+          >
             Related
           </p>
           <div class="flex flex-wrap gap-2">
-            <button
-              v-for="r in related"
-              :key="r.id"
-              class="chip-btn"
-              @click="emit('open', r.id)"
-            >
+            <button v-for="r in related" :key="r.id" class="chip-btn" @click="emit('open', r.id)">
               {{ r.label }} →
             </button>
           </div>
@@ -220,7 +232,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey))
         v-if="touring"
         class="flex items-center justify-between border-t border-slate-200/60 px-6 py-3 md:px-8 dark:border-white/10"
       >
-        <button class="chip-btn" :disabled="tourIdx === 0" :class="{ 'opacity-40': tourIdx === 0 }" @click="emit('prev')">
+        <button
+          class="chip-btn"
+          :disabled="tourIdx === 0"
+          :class="{ 'opacity-40': tourIdx === 0 }"
+          @click="emit('prev')"
+        >
           ← Prev
         </button>
         <div class="flex gap-1.5">
