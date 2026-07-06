@@ -25,3 +25,98 @@ body {
   /* dark: deep ocean */
   background: linear-gradient(180deg, #050d1f 0%, #0a1a38 55%, #101f4a 100%);
 }
+
+/* ---------- header chips ---------- */
+
+.chip-btn {
+  border-radius: 9999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.chip-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+}
+
+.dark .chip-btn {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.dark .chip-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ---------- glass bubbles ---------- */
+
+.bubble {
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.12) 45%, transparent 62%),
+    radial-gradient(circle at 72% 78%, color-mix(in oklab, var(--a) 38%, transparent), transparent 62%),
+    color-mix(in oklab, var(--a) 10%, rgba(255, 255, 255, 0.25));
+  border: 1px solid color-mix(in oklab, var(--a) 40%, rgba(255, 255, 255, 0.7));
+  box-shadow:
+    inset 0 0 22px color-mix(in oklab, var(--a) 22%, transparent),
+    0 10px 40px color-mix(in oklab, var(--a) 20%, transparent);
+  backdrop-filter: blur(5px);
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.bubble:hover {
+  box-shadow:
+    inset 0 0 30px color-mix(in oklab, var(--a) 38%, transparent),
+    0 10px 60px color-mix(in oklab, var(--a) 45%, transparent);
+}
+
+.dark .bubble {
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05) 45%, transparent 62%),
+    radial-gradient(circle at 72% 78%, color-mix(in oklab, var(--a) 45%, transparent), transparent 62%),
+    color-mix(in oklab, var(--a) 12%, rgba(8, 20, 45, 0.35));
+  border-color: color-mix(in oklab, var(--a) 50%, rgba(255, 255, 255, 0.25));
+}
+
+.bubble-blurb {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.35s ease;
+}
+
+.bubble-blurb.is-visible {
+  max-height: 3rem;
+  opacity: 1;
+}
+
+/* ---------- tethers ---------- */
+
+.tether {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: 0.3;
+  stroke-dasharray: 6 10;
+  stroke-linecap: round;
+  animation: tether-flow 1.4s linear infinite;
+}
+
+.tether-related {
+  stroke-width: 2.5;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+
+@keyframes tether-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}

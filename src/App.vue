@@ -1,7 +1,53 @@
-﻿<script setup>
+<script setup>
+import { ref } from "vue"
+import BubbleField from "./components/BubbleField.vue"
+import { profile } from "./data/portfolio"
+
+const openId = ref(null)
+
+const dark = ref(document.documentElement.classList.contains("dark"))
+function toggleTheme() {
+  dark.value = !dark.value
+  document.documentElement.classList.toggle("dark", dark.value)
+  localStorage.theme = dark.value ? "dark" : "light"
+}
 </script>
 
 <template>
-  <main class="h-full w-full"></main>
-</template>
+  <main class="relative h-full w-full">
+    <BubbleField @open="openId = $event" />
 
+    <header
+      class="pointer-events-none absolute inset-x-0 top-0 z-40 flex items-start justify-between p-5 md:p-7"
+    >
+      <div>
+        <h1 class="text-2xl font-black tracking-tight text-slate-800 md:text-3xl dark:text-white">
+          {{ profile.name }}
+        </h1>
+        <p class="text-sm font-semibold text-cyan-700 md:text-base dark:text-cyan-300">
+          {{ profile.title }}
+        </p>
+      </div>
+
+      <div class="pointer-events-auto flex items-center gap-2">
+        <a :href="profile.links.github" target="_blank" rel="noopener" class="chip-btn">GitHub</a>
+        <a :href="profile.links.linkedin" target="_blank" rel="noopener" class="chip-btn">
+          LinkedIn
+        </a>
+        <button
+          class="chip-btn"
+          :aria-label="dark ? 'Switch to light theme' : 'Switch to dark theme'"
+          @click="toggleTheme"
+        >
+          {{ dark ? "☀" : "☾" }}
+        </button>
+      </div>
+    </header>
+
+    <p
+      class="pointer-events-none absolute inset-x-0 bottom-5 z-40 text-center text-xs font-medium tracking-wide text-slate-500 dark:text-white/50"
+    >
+      hover a bubble to catch it · click to dive in
+    </p>
+  </main>
+</template>
